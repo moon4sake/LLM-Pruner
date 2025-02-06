@@ -16,3 +16,4 @@ echo "to use the pruned model"
 
 
 
+# source activate && conda activate pruner && cd ../LLM-Pruner

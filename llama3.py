@@ -102,17 +102,17 @@ def main(args):
             "iterative_steps": args.iterative_steps,
             "ch_sparsity": args.pruning_ratio, 
             "ignored_layers":[],
-            "channel_groups": {
-            },
-            "consecutive_groups": {
-                layer.self_attn.k_proj: layer.self_attn.head_dim for layer in model.model.layers
-            },
+            # "channel_groups": {
+            # },
+            # "consecutive_groups": {
+            #     layer.self_attn.k_proj: layer.self_attn.head_dim for layer in model.model.layers
+            # },
             "customized_pruners": {
                 LlamaRMSNorm: llama_pruner.hf_rmsnorm_pruner,
             },
             "root_module_types": None, 
-            "root_instances": [model.model.layers[i].self_attn.k_proj for i in range(args.block_attention_layer_start, args.block_attention_layer_end)] +
-                              [model.model.layers[i].mlp.gate_proj for i in range(args.block_mlp_layer_start, args.block_mlp_layer_end)]
+            # "root_instances": [model.model.layers[i].self_attn.k_proj for i in range(args.block_attention_layer_start, args.block_attention_layer_end)] +
+            #                   [model.model.layers[i].mlp.gate_proj for i in range(args.block_mlp_layer_start, args.block_mlp_layer_end)]
         }
         logger.log("Pruning Attention Layer = {}".format(list(range(args.block_attention_layer_start, args.block_attention_layer_end))))
         logger.log("Pruning MLP Layer = {}".format(list(range(args.block_mlp_layer_start, args.block_mlp_layer_end))))
