@@ -20,8 +20,8 @@ for i in {0..2}; do
   
   # Use a subshell to run each evaluation in the background
   (
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
   ) &
 done
 
@@ -44,8 +44,8 @@ for i in {0..2}; do
   
   # Use a subshell to run each evaluation in the background
   (
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
   ) &
 done
 
@@ -67,8 +67,8 @@ for i in {0..2}; do
   
   # Use a subshell to run each evaluation in the background
   (
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
   ) &
 done
 
@@ -91,8 +91,8 @@ for i in {0..2}; do
   
   # Use a subshell to run each evaluation in the background
   (
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0
+    echo y | CUDA_VISIBLE_DEVICES=$i bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
   ) &
 done
 
