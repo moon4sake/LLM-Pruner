@@ -23,7 +23,11 @@ prune_ckpt=$4
 epochs=("${@:5}")
 
 # Check condition for only pruned model evaluation
-if [[ -z "$tune_ckpt_name" || ( "${#epochs[@]}" -eq 1 && "${epochs[0]}" -eq 0 ) ]]; then
+if [[ -z "$tune_ckpt_name" || ( "${#epochs[@]}" -eq 1 && "${epochs[0]}" -eq 0 ) ]]; then    
+    # Run evaluation with the pre-trained model
+    echo "Evaluating the pre-trained model..."
+    python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args config_pretrained=$base_model --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_pre-trained_model.json --no_cache
+
     # Run evaluation with only the pruned model
     echo "Evaluating pruned model without fine-tuning..."
     python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,config_pretrained=$base_model --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_s${sparsity}_pruned_model.json --no_cache

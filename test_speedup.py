@@ -7,7 +7,7 @@ import numpy as np
 
 import transformers
 from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
-from transformers.activations import SiLUActivation
+# from transformers.activations import SiLUActivation
 
 from ptflops import get_model_complexity_info
 from ptflops.pytorch_ops import bn_flops_counter_hook, pool_flops_counter_hook
@@ -71,7 +71,7 @@ def main(args):
                                                     custom_modules_hooks={
                                                         LlamaAttention: LlamaAttention_counter_hook,
                                                         LlamaRMSNorm: rmsnorm_flops_counter_hook,
-                                                        SiLUActivation: pool_flops_counter_hook,
+                                                        torch.nn.SiLU: pool_flops_counter_hook,
                                                     },)
     else:
         model.float()
@@ -81,7 +81,7 @@ def main(args):
                                                     custom_modules_hooks={
                                                         LlamaAttention: LlamaAttention_counter_hook,
                                                         LlamaRMSNorm: rmsnorm_flops_counter_hook,
-                                                        SiLUActivation: pool_flops_counter_hook,
+                                                        torch.nn.SiLU: pool_flops_counter_hook,
                                                     },)
 
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
