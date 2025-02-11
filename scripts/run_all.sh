@@ -50,7 +50,7 @@ run_pipeline() {
     # Evaluating
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Evaluation on GPU ${gpu_id}"
     echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 1400
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} tune_log/${name}_s${sparsity}_block prune_log/${name}_s${sparsity}_block 3600
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Evaluation"
     echo "[${name} - Sparsity: ${sparsity}] [INFO] - The pruned model is at prune_log/${prune_ckpt_path}/pytorch_model.bin, and the recovery weight is at tune_log/${tune_ckpt_path}/"
 }
