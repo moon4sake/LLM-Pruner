@@ -8,8 +8,6 @@ trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
 # Define models and their properties
 models=(
-    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-    "Qwen/Qwen2.5-Math-1.5B"
     "meta-llama/Llama-3.1-8B"
     "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
 )
@@ -28,7 +26,7 @@ run_pipeline() {
 
     # Pruning
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
-    CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
                                                     --pruning_ratio ${sparsity} \
                                                     --device cuda --eval_device cuda \
                                                     --block_wise --block_mlp_layer_start 4 --block_mlp_layer_end 30 \
@@ -36,14 +34,14 @@ run_pipeline() {
                                                     --save_ckpt_log_name ${prune_ckpt_path} \
                                                     --pruner_type taylor --taylor param_first \
                                                     --max_seq_len 2048 \
-                                                    --test_after_train --save_model #--test_before_train
+                                                    --save_model #--test_before_train --test_after_train 
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
 
     # Fine-tuning
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
-    CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
                                                           --data_path yahma/alpaca-cleaned --output_dir tune_log/${tune_ckpt_path} \
-                                                          --wandb_project DistillPrune --lora_r 8 --num_epochs 5 \
+                                                          --wandb_project DistillPrune --lora_r 8 --num_epochs 2 \
                                                           --learning_rate 1e-4 --batch_size 64
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Prune and Post-Training."
 
