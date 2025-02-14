@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LLM-Efficient"
+version = "0.0.0"
+description = "Prune & Train LLM"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10.9"
+authors = [
+    { name = "yunik1004", email = "inkyuhak@gmail.com" },
+]
+dynamic = ["dependencies", "optional-dependencies"]
+
+[tool.setuptools]
+packages = ["llm_efficient"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt", "submodules/LLM_Pruner/requirements.txt"]}
+
+[tool.black]
+exclude = '''
+/(
+submodules
+)/
+'''
