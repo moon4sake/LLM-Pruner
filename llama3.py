@@ -19,6 +19,9 @@ from LLMPruner.utils.logger import LoggerWithDepth
 from LLMPruner.evaluator.ppl import PPLMetric
 from LLMPruner.datasets.example_samples import get_examples
 from LLMPruner.templates.prompts import prompts
+from huggingface_hub import login
+
+
 
 def set_random_seed(seed):
     random.seed(seed)
@@ -39,7 +42,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
     model = LlamaForCausalLM.from_pretrained(
         args.base_model,
-        device_map="auto",
+        # device_map="auto",
         torch_dtype=torch.float16,
     )
     if args.device != "cpu":

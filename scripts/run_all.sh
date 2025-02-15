@@ -8,8 +8,8 @@ trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
 # Define models and their properties
 models=(
-    "meta-llama/Llama-3.1-8B"
-    "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    "Qwen/Qwen2.5-1.5B-Instruct"
 )
 
 sparsity_values=("0.10" "0.25" "0.50" "0.75")
@@ -28,7 +28,7 @@ run_pipeline() {
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
     echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
                                                     --pruning_ratio ${sparsity} \
-                                                    --device cuda --eval_device cuda \
+                                                    --device cpu --eval_device cuda \
                                                     --block_wise --block_mlp_layer_start 4 --block_mlp_layer_end 30 \
                                                     --block_attention_layer_start 4 --block_attention_layer_end 30 \
                                                     --save_ckpt_log_name ${prune_ckpt_path} \
