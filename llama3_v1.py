@@ -13,15 +13,12 @@ import numpy as np
 from transformers import LlamaTokenizer, GenerationConfig, LlamaConfig, AutoTokenizer, LlamaForCausalLM
 from transformers.models.llama.modeling_llama import LlamaRMSNorm
 
-import LLMPruner.torch_pruning as tp 
+import LLMPruner.torch_pruning_v1 as tp 
 from LLMPruner.pruner import hf_llama_pruner as llama_pruner
 from LLMPruner.utils.logger import LoggerWithDepth
 from LLMPruner.evaluator.ppl import PPLMetric
 from LLMPruner.datasets.example_samples import get_examples
 from LLMPruner.templates.prompts import prompts
-from huggingface_hub import login
-
-
 
 def set_random_seed(seed):
     random.seed(seed)
@@ -42,7 +39,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
     model = LlamaForCausalLM.from_pretrained(
         args.base_model,
-        # device_map="auto",
+        device_map="auto",
         torch_dtype=torch.float16,
     )
     if args.device != "cpu":
@@ -181,9 +178,9 @@ def main(args):
             "iterative_steps": args.iterative_steps,
             "ch_sparsity": args.pruning_ratio, # remove 50% channels, ResNet18 = {64, 128, 256, 512} => ResNet18_Half = {32, 64, 128, 256}
             "ignored_layers":[],
-            # "round_to": model.config.num_attention_heads * 2,
+            #"round_to": model.config.num_attention_heads * 2,
             "channel_groups": {
-                layer.self_attn: layer.self_attn.num_heads for layer in model.model.layers
+                #layer.self_attn: layer.self_attn.num_heads for layer in model.model.layers
             },
             "customized_pruners": {
                 LlamaRMSNorm: llama_pruner.hf_rmsnorm_pruner,
