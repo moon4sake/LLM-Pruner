@@ -165,12 +165,20 @@ def main(args):
             for layer in model.model.layers:
                 layer.self_attn.num_heads = layer.self_attn.q_proj.weight.data.shape[0] // layer.self_attn.head_dim
                 layer.self_attn.num_key_value_heads = layer.self_attn.k_proj.weight.data.shape[0] // layer.self_attn.head_dim
+                layer.mlp.intermediate_size = layer.mlp.down_proj.weight.size(0)
 
         # Clean the gradient in the model
         model.zero_grad()
         for name, module in model.named_parameters():
             if 'weight' in name:
                 module.grad = None
+
+        # modify inferece-related attributes
+        model.config.num_attention_heads = model.model.layers[0].self_attn.num_heads
+        model.config.num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
+        model.config.intermediate_size = model.model.layers[0].mlp.intermediate_size
+
+        model.zero_grad()
 
         del pruner
 
