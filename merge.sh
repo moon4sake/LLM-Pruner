@@ -50,7 +50,6 @@ echo "All specified models processed successfully."
 # final_dir=tune_log/${NAME}
 # # repository directory
 # repo_dir=moon4sake/${NAME}
-# my_hf_tokens=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
 
 # python3 merge_upload.py \
 #     --base_model_name_or_path $base_model_path \
