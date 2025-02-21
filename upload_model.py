@@ -24,10 +24,6 @@ def main():
     print('\narguments are received')
     # Model & Tokenizer loading
 
-    ####################################################################################
-    ## pruned_dict = torch.load(args.base_model_name_or_path, map_location='cpu')
-    ## tokenizer, model = pruned_dict['tokenizer'], pruned_dict['model']
-    ####################################################################################
 
     print('\n####################################################################################\n')
     print("\nmodel is loading...")

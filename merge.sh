@@ -2,14 +2,14 @@
 
 # List of model names to process
 MODEL_NAMES=(
-    # "Qwen2.5-Math-1.5B_s0.10_channel"
-    # "Qwen2.5-Math-1.5B_s0.25_channel"
-    "Qwen2.5-Math-1.5B_s0.50_block"
-    "Qwen2.5-Math-1.5B_s0.75_block"
-    # "Llama-3.1-8B_s0.10_channel"
-    # "Llama-3.1-8B_s0.25_channel"
-    # "Llama-3.1-8B_s0.50_channel"
-    # "Llama-3.1-8B_s0.75_channel"
+    # "DeepSeek-R1-Distill-Qwen-1.5B_s0.10_channel"
+    # "DeepSeek-R1-Distill-Qwen-1.5B_s0.25_channel"
+    "DeepSeek-R1-Distill-Qwen-1.5B_s0.50_block"
+    "DeepSeek-R1-Distill-Qwen-1.5B_s0.75_block"
+    # "DeepSeek-R1-Distill-Llama-8B_s0.10_block"
+    # "DeepSeek-R1-Distill-Llama-8B_s0.10_channel"
+    # "DeepSeek-R1-Distill-Llama-8B_s0.50_channel"
+    # "DeepSeek-R1-Distill-Llama-8B_s0.75_channel"
 )
 
 # Base directories for model and adapter paths
@@ -18,7 +18,7 @@ BASE_TUNE_LOG_DIR="./tune_log/"
 BASE_HF_REPO="moon4sake"
 
 # Hugging Face token
-MY_HF_TOKEN="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"
+MY_HF_TOKEN="custom"
 
 # Loop through each specified model name
 for MODEL_NAME in "${MODEL_NAMES[@]}"; do
@@ -34,7 +34,7 @@ for MODEL_NAME in "${MODEL_NAMES[@]}"; do
     python3 merge_upload.py \
         --base_model_name_or_path "$BASE_MODEL_PATH" \
         --peft_model_path "$ADAPTER_PATH" \
-        --output_dir "$FINAL_DIR" \ㅇ
+        --output_dir "$FINAL_DIR" \
         --repo_path "$REPO_DIR" \
         --hf_token "$MY_HF_TOKEN"
 done
@@ -50,7 +50,6 @@ echo "All specified models processed successfully."
 # final_dir=tune_log/${NAME}
 # # repository directory
 # repo_dir=moon4sake/${NAME}
-# my_hf_tokens=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
 
 # python3 merge_upload.py \
 #     --base_model_name_or_path $base_model_path \

@@ -8,11 +8,11 @@ trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
 # Define models and their properties
 models=(
-    "meta-llama/Llama-3.1-8B"
-    # "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    # "meta-llama/Llama-3.1-8B"
+    "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
 )
 
-sparsity_values=("0.10" "0.25" "0.50" "0.75")
+sparsity_values=("0.50" "0.75")
 
 # Function to prune, fine-tune, and evaluate a model for a single sparsity level
 run_pipeline() {
@@ -58,7 +58,7 @@ run_pipeline() {
 }
 
 # Number of available GPUs; adjust if needed
-num_gpus=4
+num_gpus=2
 
 # Main loop to run each model
 for model in "${models[@]}"; do

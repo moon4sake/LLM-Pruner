@@ -6,15 +6,12 @@ set -e
 # Function to handle errors and output error message
 trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
-# Define models and their properties
-models=(
-    "meta-llama/Llama-3.2-1B"
-    # "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-    # "meta-llama/Llama-3.1-8B"
-    # "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-)
+# Define the model to be used
+models=("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
 
-sparsity_values=("0.10" "0.25" "0.50" "0.75")
+# Sparsity values specifically for GPUs 2 and 3
+sparsity_values=("0.10" "0.25")
+gpu_ids=(2 3)  # Only using GPUs 2 and 3
 
 # Function to prune, fine-tune, and evaluate a model for a single sparsity level
 run_pipeline() {

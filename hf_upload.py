@@ -1,3 +1,11 @@
+# from huggingface_hub import HfApi
+# api = HfApi()
+# api.upload_large_folder(
+#     repo_id="moon4sake/DeepSeek-R1-Distill-Llama-8B_s0.10_channel",
+#     repo_type="model",
+#     folder_path="DeepSeek-R1-Distill-Llama-8B_s0.10_channel",
+# )
+
 import os
 from huggingface_hub import HfApi
 
@@ -13,8 +21,12 @@ def upload_all_models(base_path, user_name):
         try:
             # Construct the full path to the model folder
             folder_path = os.path.join(base_path, model_folder)
+            # folder_path = model_folder
             # Construct the repository ID
             repo_id = f"{user_name}/{model_folder}"
+
+            # print(folder_path)
+            # exit()
 
             # Perform the upload
             print(f"Uploading {model_folder} to {repo_id}...")
@@ -26,12 +38,6 @@ def upload_all_models(base_path, user_name):
             print(f"Successfully uploaded {model_folder}.\n")
         except Exception as e:
             print(f"Failed to upload {model_folder}: {e}")
-
-# api.upload_large_folder(
-#     repo_id="moon4sake/DeepSeek-R1-Distill-Llama-8B_s0.10_channel",
-#     repo_type="model",
-#     folder_path="DeepSeek-R1-Distill-Llama-8B_s0.10_channel",
-# )
 
 if __name__ == "__main__":
     # Base path where model folders are located

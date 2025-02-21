@@ -29,7 +29,7 @@ def main():
 
     print(f"Loading base model: {args.base_model_name_or_path}")
 
-    pruned_dict = torch.load(args.base_model_name_or_path, map_location='cpu')
+    pruned_dict = torch.load(args.base_model_name_or_path, map_location='cpu', weights_only=False)
     tokenizer, model = pruned_dict['tokenizer'], pruned_dict['model']
 
     # base_model = AutoModelForCausalLM.from_pretrained(
