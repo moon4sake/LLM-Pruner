@@ -1,0 +1,6 @@
+{
+    "model_name": "Qwen/Qwen2.5-Math-1.5B",
+    "macs": "98.81 GMac",
+    "params": "1543.71 M",
+    "latency": 125.56464743614197
+}

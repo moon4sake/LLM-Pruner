@@ -1,0 +1,6 @@
+{
+    "model_name": "moon4sake/Qwen2.5-Math-1.5B_s0.25_channel",
+    "macs": "74.11 GMac",
+    "params": "1157.74 M",
+    "latency": 123.51952505111694
+}

@@ -24,22 +24,22 @@ run_pipeline() {
     prune_ckpt_path="${name}_s${sparsity}_channel"
     tune_ckpt_path="${name}_s${sparsity}_channel"
 
-    # Pruning with automatic OOM handling
-    echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
-    if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
-        --pruning_ratio ${sparsity} --device cuda --eval_device cuda --channel_wise \
-        --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
-        --taylor param_first --max_seq_len 2048 --save_model); then
+    # # Pruning with automatic OOM handling
+    # echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
+    # if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
+    #     --pruning_ratio ${sparsity} --device cuda --eval_device cuda --channel_wise \
+    #     --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
+    #     --taylor param_first --max_seq_len 2048 --save_model); then
         
-        echo "[${name} - Sparsity: ${sparsity}] [OOM] - OOM error encountered on GPU ${gpu_id}, switching to CPU."
+    #     echo "[${name} - Sparsity: ${sparsity}] [OOM] - OOM error encountered on GPU ${gpu_id}, switching to CPU."
         
-        # Retry pruning using CPU if GPU fails with OOM
-        CUDA_VISIBLE_DEVICES= python llama3.py --base_model ${base_model} \
-            --pruning_ratio ${sparsity} --device cpu --eval_device cuda --channel_wise \
-            --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
-            --taylor param_first --max_seq_len 2048 --save_model
-    fi
-    echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
+    #     # Retry pruning using CPU if GPU fails with OOM
+    #     CUDA_VISIBLE_DEVICES= python llama3.py --base_model ${base_model} \
+    #         --pruning_ratio ${sparsity} --device cpu --eval_device cuda --channel_wise \
+    #         --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
+    #         --taylor param_first --max_seq_len 2048 --save_model
+    # fi
+    # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
 
     # Fine-tuning
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"

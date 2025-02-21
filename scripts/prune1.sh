@@ -26,7 +26,7 @@ do
     echo "to use the pruned model"
 done
 
-
+w
 sparsity_list="0.25"
 for sparsity in ${sparsity_list}
 do
