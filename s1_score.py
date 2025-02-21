@@ -114,7 +114,7 @@ def s1_decoding(model,tokenizer,prompts,args):
     sampling_params = SamplingParams(
         max_tokens=32768,
         min_tokens=0,
-       stop=stop_tokens,
+        stop=stop_tokens,
         skip_special_tokens=False,
         temperature=0.0,
     )
@@ -203,5 +203,7 @@ def parse_args():
 
 if __name__ == "__main__":
     
+    os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+
     args = parse_args()
     main(args)

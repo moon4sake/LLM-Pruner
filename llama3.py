@@ -42,7 +42,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
     model = LlamaForCausalLM.from_pretrained(
         args.base_model,
-        # device_map="auto",
+        device_map="auto",
         torch_dtype=torch.float16,
     )
     if args.device != "cpu":
