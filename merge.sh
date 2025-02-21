@@ -18,7 +18,7 @@ BASE_TUNE_LOG_DIR="./tune_log/"
 BASE_HF_REPO="moon4sake"
 
 # Hugging Face token
-MY_HF_TOKEN="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"
+MY_HF_TOKEN="custom"
 
 # Loop through each specified model name
 for MODEL_NAME in "${MODEL_NAMES[@]}"; do
