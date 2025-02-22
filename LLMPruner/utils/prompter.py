@@ -4,7 +4,7 @@ A dedicated helper to manage templates and prompt building.
 
 import json
 import os.path as osp
-from typing import Union
+from typing import Union, Any
 
 alpaca_template = {
     "description": "Template used by Alpaca-LoRA.",

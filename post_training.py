@@ -89,7 +89,7 @@ def main(args):
         #         data_point["output"],
         #     )
         
-        full_prompt= prompter.generate_prompt(data_point["question"],data_point["answer"])
+        full_prompt= prompter.generate_prompt(data_point["question"],data_point["solution"])
         tokenized_full_prompt = tokenize(full_prompt)
         
         
