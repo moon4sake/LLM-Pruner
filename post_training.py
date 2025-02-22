@@ -20,7 +20,7 @@ from LLMPruner.peft import (
     prepare_model_for_int8_training,
     set_peft_model_state_dict,
 )
-from LLMPruner.utils.prompter import Prompter, ZeroPrompter
+from LLMPruner.utils.prompter import Prompter, ZeroPrompter, Chat_Prompter
 from LLMPruner.datasets.ppl_dataset import get_loaders
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -34,10 +34,15 @@ def main(args):
     tokenizer, model = pruned_dict['tokenizer'], pruned_dict['model']
 
     gradient_accumulation_steps = args.batch_size // args.micro_batch_size
-    if not args.no_instruction:
-        prompter = Prompter(args.prompt_template_name)
-    else:
-        prompter = ZeroPrompter()
+    # if not args.no_instruction:
+    #     prompter = Prompter(args.prompt_template_name)
+        
+        
+    # else:
+    #     prompter = ZeroPrompter()
+    
+    
+    prompter= Chat_Prompter(tokenizer)
 
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
@@ -47,7 +52,7 @@ def main(args):
     if device == 'cuda':
         model.half()
 
-    tokenizer.pad_token_id = 0
+    tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = "left"
 
     def tokenize(prompt, add_eos_token=True):
@@ -71,26 +76,25 @@ def main(args):
         return result
 
     def generate_and_tokenize_prompt(data_point):
-        if 'lamini' in args.data_path.lower():
-            full_prompt = prompter.generate_prompt(
-                data_point["instruction"],
-                None,
-                data_point["response"],
-            )
-        elif 'alpaca' in args.data_path.lower():
-            full_prompt = prompter.generate_prompt(
-                data_point["instruction"],
-                data_point["input"],
-                data_point["output"],
-            )
-        else:
-            raise NotImplementedError
-
+        # if 'lamini' in args.data_path.lower():
+        #     full_prompt = prompter.generate_prompt(
+        #         data_point["instruction"],
+        #         None,
+        #         data_point["response"],
+        #     )
+        # elif 'alpaca' in args.data_path.lower():
+        #     full_prompt = prompter.generate_prompt(
+        #         data_point["instruction"],
+        #         data_point["input"],
+        #         data_point["output"],
+        #     )
+        
+        full_prompt= prompter.generate_prompt(data_point["question"],data_point["answer"])
         tokenized_full_prompt = tokenize(full_prompt)
+        
+        
         if not args.train_on_inputs:
-            user_prompt = prompter.generate_prompt(
-                data_point["instruction"], data_point["input"] if 'input' in data_point.keys() else None,
-            )
+            user_prompt = prompter.generate_prompt(data_point["question"])
             tokenized_user_prompt = tokenize(
                 user_prompt, add_eos_token=args.add_eos_token
             )

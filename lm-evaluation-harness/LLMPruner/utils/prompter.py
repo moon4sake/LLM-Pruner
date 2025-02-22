@@ -4,7 +4,7 @@ A dedicated helper to manage templates and prompt building.
 
 import json
 import os.path as osp
-from typing import Union
+from typing import Union, Any
 
 alpaca_template = {
     "description": "Template used by Alpaca-LoRA.",
@@ -49,48 +49,11 @@ class Prompter(object):
 
     def get_response(self, output: str) -> str:
         return output.split(self.template["response_split"])[1].strip()
-
-
-class ZeroPrompter(object):
-    __slots__ = ("_verbose")
-
-    def __init__(self, verbose: bool = False):
-        self._verbose = verbose
-        
-        if self._verbose:
-            print(
-                f"Without using prompt template!"
-            )
-
-    def generate_prompt(
-        self,
-        instruction: str,
-        input: Union[None, str] = None,
-        label: Union[None, str] = None,
-    ) -> str:
-        # returns the full prompt from instruction and optional input
-        # if a label (=response, =output) is provided, it's also appended.
-        if instruction[-1] == '.':
-            instruction = instruction[:-1] + ':'
-        if instruction[-1] not in ['.', ':', '?', '!']:
-            instruction = instruction + ':'
-        instruction += ' '
-
-        if input:
-            if input[-1] not in ['.', ':', '?', '!']:
-                input = input + '.'
-            res = instruction + input
-        else:
-            res = instruction
-        if label:
-            res = f"{res} {label}"
-        if self._verbose:
-            print(res)
-        return res
-
-    def get_response(self, output: str) -> str:
-        return output.strip()
-
+    
+    
+    
+    
+    
 class Chat_Prompter(object):
     def __init__(self , tokenizer: Any, verbose: bool = False):
         self._verbose = verbose
@@ -148,3 +111,48 @@ class Chat_Prompter(object):
             print(res)
         
         return res
+
+        def get_response(self, output: str) -> str:
+            return output.strip()
+
+
+
+class ZeroPrompter(object):
+    __slots__ = ("_verbose")
+
+    def __init__(self, verbose: bool = False):
+        self._verbose = verbose
+        
+        if self._verbose:
+            print(
+                f"Without using prompt template!"
+            )
+
+    def generate_prompt(
+        self,
+        instruction: str,
+        input: Union[None, str] = None,
+        label: Union[None, str] = None,
+    ) -> str:
+        # returns the full prompt from instruction and optional input
+        # if a label (=response, =output) is provided, it's also appended.
+        if instruction[-1] == '.':
+            instruction = instruction[:-1] + ':'
+        if instruction[-1] not in ['.', ':', '?', '!']:
+            instruction = instruction + ':'
+        instruction += ' '
+
+        if input:
+            if input[-1] not in ['.', ':', '?', '!']:
+                input = input + '.'
+            res = instruction + input
+        else:
+            res = instruction
+        if label:
+            res = f"{res} {label}"
+        if self._verbose:
+            print(res)
+        return res
+
+    def get_response(self, output: str) -> str:
+        return output.strip()
