@@ -237,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_epochs', type=int, default=5, help='number of epochs')
     parser.add_argument('--learning_rate', type=float, default=3e-4, help='learning rate')
     parser.add_argument('--cutoff_len', type=int, default=256, help='cutoff length')
-    parser.add_argument('--val_set_size', type=int, default=2000, help='validation set size')
+    parser.add_argument('--val_set_size', type=int, default=50, help='validation set size')
     parser.add_argument('--prompt_template_name', type=str, default="alpaca", help="The prompt template to use, will default to alpaca.")
     parser.add_argument('--no_instruction', action='store_true', default=False, help="Whether to use the instruction template or not.")
 

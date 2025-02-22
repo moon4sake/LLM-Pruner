@@ -103,25 +103,26 @@ class Chat_Prompter(object):
         if not hasattr(self.tokenizer, "apply_chat_template"):
             self.flag= False
             print("Tokenizer does not support `apply_chat_template`.")
+            
             template_lst = {
-            "alpaca": {
-                "description": "Alpaca-style chat template",
-                "prompt_input": "### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n### Response:\n",
-                "prompt_no_input": "### Instruction:\n{instruction}\n\n### Response:\n"
-            },
-            "chatml": {
-                "description": "ChatML-style template (OpenAI style)",
-                "prompt_input": "<|system|> You are a helpful assistant. <|user|>\n{instruction} {input} <|assistant|>\n",
-                "prompt_no_input": "<|system|> You are a helpful assistant. <|user|>\n{instruction} <|assistant|>\n"
-            },
-            "custom": {
-                "description": "Custom chat template",
-                "prompt_input": "[USER]: {instruction}\n[INPUT]: {input}\n[ASSISTANT]: ",
-                "prompt_no_input": "[USER]: {instruction}\n[ASSISTANT]: "
+                "alpaca": {
+                    "description": "Alpaca-style chat template",
+                    "prompt_input": "### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n### Response:\n",
+                    "prompt_no_input": "### Instruction:\n{instruction}\n\n### Response:\n"
+                },
+                "chatml": {
+                    "description": "ChatML-style template (OpenAI style)",
+                    "prompt_input": "<|system|> You are a helpful assistant. <|user|>\n{instruction} {input} <|assistant|>\n",
+                    "prompt_no_input": "<|system|> You are a helpful assistant. <|user|>\n{instruction} <|assistant|>\n"
+                },
+                "custom": {
+                    "description": "Custom chat template",
+                    "prompt_input": "[USER]: {instruction}\n[INPUT]: {input}\n[ASSISTANT]: ",
+                    "prompt_no_input": "[USER]: {instruction}\n[ASSISTANT]: "
+                }
             }
-        }
-        
-        self.templates=template_lst['custom']
+            
+            self.templates=template_lst['custom']
 
     def generate_prompt(
         self,
