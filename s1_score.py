@@ -25,13 +25,36 @@ def generate_prompt(query_text,tokenizer):
 
 
 
-
 def extract_answer(output_text):
-    numbers = re.findall(r'\b\d{1,3}(?:[,\.]\d{3})*\b', output_text)  
-    if numbers:
-        final_answer = numbers[-1].replace(',', '').replace('.', '') # last is answer(hypothesis)
-        return int(final_answer)  
-    return None    
+    # 1. "Final Answer:" 패턴에서 숫자 추출 (우선순위 가장 높음)
+    final_answer_match = re.search(r'Final Answer:\s*(\\boxed\{[^\d]*(\d+)[^\d]*\}|\d{1,3}(?:[,\.]\d{3})*)', output_text)
+
+    if final_answer_match:
+        final_answer = final_answer_match.group(2) if final_answer_match.group(2) else final_answer_match.group(1)
+        return int(final_answer.replace(',', '').replace('.', ''))  # 천 단위 구분자 제거 후 변환
+
+    # 2. "The answer is:" 패턴에서 숫자 추출 (대체 역할)
+    the_answer_match = re.search(r'The answer is:\s*(\\boxed\{[^\d]*(\d+)[^\d]*\}|\d{1,3}(?:[,\.]\d{3})*)', output_text)
+
+    if the_answer_match:
+        the_answer = the_answer_match.group(2) if the_answer_match.group(2) else the_answer_match.group(1)
+        return int(the_answer.replace(',', '').replace('.', ''))  # 천 단위 구분자 제거 후 변환
+
+    # 3. 일반 숫자 추출 (천 단위 구분자 포함)
+    numbers = re.findall(r'\b\d{1,3}(?:[,\.]\d{3})*\b', output_text)
+
+    # 4. \boxed{} 안의 숫자 추출
+    boxed_numbers = re.findall(r'\\boxed\{[^\d]*(\d+)[^\d]*\}', output_text)
+
+    # 5. 모든 숫자를 하나의 리스트로 합침
+    all_numbers = numbers + boxed_numbers
+
+    if all_numbers:
+        # 마지막 숫자 선택 (기존 방식)
+        final_answer = all_numbers[-1]
+        return int(final_answer.replace(',', '').replace('.', ''))  # 콤마 제거 후 변환
+
+    return None
     
     
     
@@ -89,7 +112,7 @@ def s1_decoding(model,tokenizer,prompts,args):
     ignore_str = "Wait"
     
 
-    for _ in range(2):
+    for _ in range(1):
         prompts = [prompt + res+ ignore_str for prompt, res in zip(prompts, infer_result) ]
         
         sampling_params = SamplingParams(
