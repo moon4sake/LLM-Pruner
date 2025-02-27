@@ -33,7 +33,7 @@ GPUS=(0) # 1 2 3)
 for i in "${!GPUS[@]}"; do
     GPU_ID="${GPUS[$i]}"
     MODEL="${MODELS[$i]}"  # Assuming one model per GPU for simplicity
-    OUTPUT_FILE="eval_results/${MODEL}_results.json"
+    OUTPUT_FILE="eval_results_new/${MODEL}_results.json"
 
     echo "Starting evaluation for model: $MODEL on GPU: $GPU_ID"
     

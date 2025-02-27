@@ -89,12 +89,12 @@ def main(args):
         #         data_point["output"],
         #     )
         
-        full_prompt= prompter.generate_prompt(data_point["question"],data_point["solution"])
+        full_prompt= prompter.generate_prompt(data_point["problem"],data_point["solution"])
         tokenized_full_prompt = tokenize(full_prompt)
         
         
         if not args.train_on_inputs:
-            user_prompt = prompter.generate_prompt(data_point["question"])
+            user_prompt = prompter.generate_prompt(data_point["problem"])
             tokenized_user_prompt = tokenize(
                 user_prompt, add_eos_token=args.add_eos_token
             )
