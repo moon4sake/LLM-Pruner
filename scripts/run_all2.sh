@@ -26,7 +26,7 @@ run_pipeline() {
     prune_ckpt_path="${name}_s${sparsity}_block"
     tune_ckpt_path="${name}_s${sparsity}_block"
 
-    Pruning with automatic OOM handling
+    # Pruning with automatic OOM handling
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
     if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
         --pruning_ratio ${sparsity} --device cuda --eval_device cuda --block_wise \
