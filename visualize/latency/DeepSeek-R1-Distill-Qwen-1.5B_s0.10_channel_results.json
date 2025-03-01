@@ -1,6 +1,0 @@
-{
-    "model_name": "moon4sake/DeepSeek-R1-Distill-Qwen-1.5B_s0.10_channel",
-    "macs": "88.9 GMac",
-    "params": "1598.86 M",
-    "latency": 167.48329281806946
-}

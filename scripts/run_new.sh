@@ -19,7 +19,7 @@ models=(
 )
 
 num_layers=(28 16)
-sparsity_values=("0.25" "0.50" "0.75")
+sparsity_values=("0.10" "0.25" "0.50" "0.75")
 
 # Function to prune, fine-tune, and evaluate a model for a single sparsity level
 run_pipeline() {
@@ -62,14 +62,14 @@ run_pipeline() {
     # Evaluating
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Evaluation on GPU ${gpu_id}"
     # echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0
-    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 1400
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 1400 5
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Evaluation"
     echo "[${name} - Sparsity: ${sparsity}] [INFO] - The pruned model is at prune_log/${prune_ckpt_path}/pytorch_model.bin, and the recovery weight is at tune_log/${tune_ckpt_path}/"
 }
 
 # Set the GPUs to use
 # You want to use GPU 2 and 3
-gpus=(3 4 7)
+gpus=(4 5 6 7)
 
 # Main loop to run each model
 for i in "${!models[@]}"; do
