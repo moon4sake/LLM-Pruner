@@ -8,43 +8,42 @@ trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
 # Define models and their properties
 models=(
-    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-    # "Qwen/Qwen2.5-Math-1.5B-Instruct"
-    # "microsoft/Phi-3.5-mini-instruct"
     # "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-    # "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    "meta-llama/Llama-3.2-3B-Instruct"
+    "meta-llama/Llama-3.2-1B-Instruct"
 )
-
-sparsity_values=("0.50" "0.75")
+num_layers=(26 14)
+sparsity_values=("0.25" "0.50")
 
 # Function to prune, fine-tune, and evaluate a model for a single sparsity level
 run_pipeline() {
     local base_model=$1
-    local sparsity=$2
-    local gpu_id=$3
+    local num_layers=$2
+    local sparsity=$3
+    local gpu_id=$4
     local name=${base_model##*/}
 
     prune_ckpt_path="${name}_s${sparsity}_block"
     tune_ckpt_path="${name}_s${sparsity}_block"
 
-    # # Pruning with automatic OOM handling
-    # echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
-    # if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
-    #     --pruning_ratio ${sparsity} --device cuda --eval_device cuda --block_wise \
-    #     --block_mlp_layer_start 4 --block_mlp_layer_end 30 --block_attention_layer_start 4 \
-    #     --block_attention_layer_end 30 --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
-    #     --taylor param_first --max_seq_len 2048 --save_model); then
+    # Pruning with automatic OOM handling
+    echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
+    if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
+        --pruning_ratio ${sparsity} --device cuda --eval_device cuda --block_wise \
+        --block_mlp_layer_start 4 --block_mlp_layer_end ${num_layers} --block_attention_layer_start 4 \
+        --block_attention_layer_end ${num_layers} --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
+        --taylor param_first --max_seq_len 2048 --save_model); then
         
-    #     echo "[${name} - Sparsity: ${sparsity}] [OOM] - OOM error encountered on GPU ${gpu_id}, switching to CPU."
+        echo "[${name} - Sparsity: ${sparsity}] [OOM] - OOM error encountered on GPU ${gpu_id}, switching to CPU."
         
-    #     # Retry pruning using CPU if GPU fails with OOM
-    #     CUDA_VISIBLE_DEVICES= python llama3.py --base_model ${base_model} \
-    #         --pruning_ratio ${sparsity} --device cpu --eval_device cuda --block_wise \
-    #         --block_mlp_layer_start 4 --block_mlp_layer_end 30 --block_attention_layer_start 4 \
-    #         --block_attention_layer_end 30 --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
-    #         --taylor param_first --max_seq_len 2048 --save_model
-    # fi
-    # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
+        # Retry pruning using CPU if GPU fails with OOM
+        CUDA_VISIBLE_DEVICES= python llama3.py --base_model ${base_model} \
+            --pruning_ratio ${sparsity} --device cpu --eval_device cuda --block_wise \
+            --block_mlp_layer_start 4 --block_mlp_layer_end ${num_layers} --block_attention_layer_start 4 \
+            --block_attention_layer_end ${num_layers} --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
+            --taylor param_first --max_seq_len 2048 --save_model
+    fi
+    echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
 
     # Fine-tuning
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
@@ -64,24 +63,26 @@ run_pipeline() {
 
 # Set the GPUs to use
 # You want to use GPU 2 and 3
-gpus=(4 5)
+gpus=(1 3)
 
 # Main loop to run each model
-for model in "${models[@]}"; do
+for i in "${!models[@]}"; do
     echo "Starting processing for model: ${model}"
+    model="${models[$i]}"
+    num_layers="${num_layers[$i]}"
     
-    for i in "${!sparsity_values[@]}"; do
-        sparsity="${sparsity_values[$i]}"
-        gpu_id="${gpus[$((i % ${#gpus[@]}))]}"  # Cycle through GPUs 2 and 3
+    for j in "${!sparsity_values[@]}"; do
+        sparsity="${sparsity_values[$j]}"
+        gpu_id="${gpus[$((j % ${#gpus[@]}))]}"  # Cycle through GPUs 2 and 3
         # Run each sparsity level concurrently for the current model
         (
-            run_pipeline "$model" "$sparsity" "$gpu_id"
+            run_pipeline "$model" "$num_layers" "$sparsity" "$gpu_id"
         ) &
     done
     
     # Wait for all sparsity jobs for the current model to finish
-    wait
-    echo "Completed processing for model: ${model}"
+    # wait
+    # echo "Completed processing for model: ${model}"
 done
 
 echo "All processing completed."

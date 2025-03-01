@@ -20,17 +20,18 @@ base_model=$1
 sparsity=$2
 tune_ckpt_name=$3
 prune_ckpt=$4
-epochs=("${@:5}")
+epochs=$5
+num_fewshot=$6
 
 # Check condition for only pruned model evaluation
 if [[ -z "$tune_ckpt_name" || ( "${#epochs[@]}" -eq 1 && "${epochs[0]}" -eq 0 ) ]]; then    
-    # # Run evaluation with the pre-trained model
-    # echo "Evaluating the pre-trained model..."
-    # python lm-evaluation-harness/main.py --model hf --model_args pretrained=$base_model --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_pre-trained_model.json --no_cache
+    # Run evaluation with the pre-trained model
+    echo "Evaluating the pre-trained model..."
+    python lm-evaluation-harness/main.py --model hf --model_args pretrained=$base_model,trust_remote_code=True --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_pre-trained_model_${num_fewshot}shot.json --num_fewshot ${num_fewshot} --no_cache
 
-    # Run evaluation with only the pruned model
-    echo "Evaluating pruned model without fine-tuning..."
-    python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,config_pretrained=$base_model --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_s${sparsity}_pruned_model.json --no_cache
+    # # Run evaluation with only the pruned model
+    # echo "Evaluating pruned model without fine-tuning..."
+    # python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,config_pretrained=$base_model --tasks openbookqa,arc_easy,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${base_model}_s${sparsity}_pruned_model_${num_fewshot}shot.json --num_fewshot ${num_fewshot} --no_cache
 else
     # Run evaluation with both the pruned and fine-tuned model
     echo "Evaluating pruned and fine-tuned model..."
@@ -40,6 +41,6 @@ else
         mv $tune_ckpt_name/checkpoint-$epoch/pytorch_model.bin $tune_ckpt_name/checkpoint-$epoch/adapter_model.bin
 
         tune_id="${tune_ckpt_name##*/}"
-        python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,peft=$tune_ckpt_name/checkpoint-$epoch,config_pretrained=$base_model --tasks openbookqa,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${tune_id}_s${sparsity}_$epoch_5shot.json --num_fewshot 5 --no_cache
+        python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,peft=$tune_ckpt_name/checkpoint-$epoch,config_pretrained=$base_model --tasks openbookqa,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${tune_id}_s${sparsity}_${epoch}_${num_fewshot}shot.json --num_fewshot ${num_fewshot} --no_cache
     done
-fi
+fi          
