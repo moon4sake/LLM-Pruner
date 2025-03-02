@@ -266,7 +266,6 @@ def parse_args():
     parser.add_argument("--model", type=str, help="Path to the model checkpoint")  # model path
     parser.add_argument("--architecture_name", type=str, help="Path to the model checkpoint") 
     parser.add_argument("--adapter", type=str, help="Path to the adapter checkpoint")  # adapter path
-    parser.add_argument("--tokenizer", type=str)  # tokenizer path
     parser.add_argument("--data_file", type=str, default='./data/gsm8k_test')  # data file path
     parser.add_argument("--tensor_parallel_size", type=int, default=4)  # tensor parallel size
     parser.add_argument("--outdir", type=str, default='output_answer')  # output directory

@@ -1,6 +1,7 @@
 ## Supported models
-- [x] [Llama-3.1]
+- [x] [Llama-3.1, 3.2]
 - [x] [Qwen-2.5]
+- [x] [Deepseek-R1-Distill models]
 
 ## Prune and fine-tune
 ### All at once: 
@@ -30,5 +31,5 @@ bash eval/s1/run.sh
 
 ### GSM8k
 ```
-bash eval/gsm8k/test_cot.sh
+bash eval/gsm8k/run.sh
 ```
