@@ -11,22 +11,24 @@ models=(
     # "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
     "Qwen/Qwen2.5-Math-1.5B-Instruct"
 )
+architecture_names=("qwen")
 sparsity_values=("0.10")
 
 run_pipeline() {
     local base_model=$1
-    local sparsity=$2
-    local gpu_id=$3
+    local architecture_name=$2
+    local sparsity=$3
+    local gpu_id=$4
     local name=${base_model##*/}
-
-    prune_ckpt_path="prune_log/${name}_s${sparsity}_block_mid_global/pytorch_model.bin"
-    tune_ckpt_path="tune_log/${name}_s${sparsity}_block_mid_global/checkpoint-5000/adapter_model.bin"
-    out_path="results/s1/${name}_s${sparsity}_block_mid_global"
+    prune_ckpt_path="prune_log/${name}_s${sparsity}_block_all_global/pytorch_model.bin"
+    tune_ckpt_path="tune_log/${name}_s${sparsity}_block_all_global/checkpoint-5000"
+    out_path="results/s1/${name}_s${sparsity}_block_all_global"
 
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Evaluation on GPU ${gpu_id}"
     CUDA_VISIBLE_DEVICES=${gpu_id} python ${folder_path}/s1_score_transformers.py \
         --model ${prune_ckpt_path} \
         --adapter ${tune_ckpt_path} \
+        --architecture_name ${architecture_name} \
         --tokenizer ${base_model} \
         --data_file ${folder_path}/data/gsm8k_test.csv \
         --outdir ${out_path} \
@@ -42,10 +44,11 @@ for model in "${models[@]}"; do
     echo "Starting processing for model: ${model}"
     
     for j in "${!sparsity_values[@]}"; do
+        architecture_name="${architecture_names[$j]}"
         sparsity="${sparsity_values[$j]}"
         gpu_id="${gpus[$((j % ${#gpus[@]}))]}"
         (
-            run_pipeline "$model" "$sparsity" "$gpu_id"
+            run_pipeline "$model" "$architecture_name" "$sparsity" "$gpu_id"
         ) &
     done
     

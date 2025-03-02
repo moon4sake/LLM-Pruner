@@ -22,6 +22,7 @@ tune_ckpt_name=$3
 prune_ckpt=$4
 epochs=$5
 num_fewshot=$6
+suffix=$7
 
 # Check condition for only pruned model evaluation
 if [[ -z "$tune_ckpt_name" || ( "${#epochs[@]}" -eq 1 && "${epochs[0]}" -eq 0 ) ]]; then    
@@ -41,6 +42,6 @@ else
         mv $tune_ckpt_name/checkpoint-$epoch/pytorch_model.bin $tune_ckpt_name/checkpoint-$epoch/adapter_model.bin
 
         tune_id="${tune_ckpt_name##*/}"
-        python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,peft=$tune_ckpt_name/checkpoint-$epoch,config_pretrained=$base_model --tasks openbookqa,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${tune_id}_s${sparsity}_${epoch}_${num_fewshot}shot.json --num_fewshot ${num_fewshot} --no_cache
+        python lm-evaluation-harness/main.py --model hf-causal-experimental --model_args checkpoint=$prune_ckpt/pytorch_model.bin,peft=$tune_ckpt_name/checkpoint-$epoch,config_pretrained=$base_model --tasks openbookqa,winogrande,hellaswag,arc_challenge,piqa,boolq --device cuda:0 --output_path results/${tune_id}_s${sparsity}_${epoch}_${num_fewshot}shot_${suffix}.json --num_fewshot ${num_fewshot} --no_cache
     done
 fi          

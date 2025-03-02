@@ -25,7 +25,7 @@ bash eval/latency/test_latency.sh
 
 ### S1 (simple scaling)
 ```
-bash eval/s1/test_s1.sh
+bash eval/s1/run.sh
 ```
 
 ### GSM8k
