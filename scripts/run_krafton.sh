@@ -34,7 +34,7 @@ run_pipeline() {
 
     # Pruning with automatic OOM handling
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
-    if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python llama3.py --base_model ${base_model} \
+    if ! (echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python prune.py --base_model ${base_model} \
         --pruning_ratio ${sparsity} --device cuda --eval_device cuda --block_wise --global_pruning \
         --block_mlp_layer_start 2 --block_mlp_layer_end $((num_layers - 2)) --block_attention_layer_start 0 \
         --block_attention_layer_end ${num_layers} --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
@@ -43,7 +43,7 @@ run_pipeline() {
         echo "[${name} - Sparsity: ${sparsity}] [OOM] - OOM error encountered on GPU ${gpu_id}, switching to CPU."
         
         # Retry pruning using CPU if GPU fails with OOM
-        CUDA_VISIBLE_DEVICES= python llama3.py --base_model ${base_model} \
+        CUDA_VISIBLE_DEVICES= python prune.py --base_model ${base_model} \
             --pruning_ratio ${sparsity} --device cpu --eval_device cuda --block_wise --global_pruning \
             --block_mlp_layer_start 2 --block_mlp_layer_end $((num_layers - 2)) --block_attention_layer_start 0 \
             --block_attention_layer_end ${num_layers} --save_ckpt_log_name ${prune_ckpt_path} --pruner_type taylor \
