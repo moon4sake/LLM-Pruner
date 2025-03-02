@@ -33,7 +33,7 @@ run_pipeline() {
 }
 
 # Set the GPUs to use
-gpus=(7)
+gpus=(6)
 
 # Main loop to run each model
 for model in "${models[@]}"; do

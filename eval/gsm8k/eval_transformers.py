@@ -9,6 +9,7 @@ from peft import PeftModel
 from fraction import Fraction
 import sys
 import pandas as pd
+from tqdm import tqdm
 MAX_INT = sys.maxsize
 
 
@@ -115,7 +116,7 @@ def gsm8k_test(model, tokenizer, data_path, start=0, end=MAX_INT, batch_size=1, 
     
     result = []
     res_completions = []
-    for idx, (prompt, prompt_answer) in enumerate(zip(batch_gsm8k_ins, gsm8k_answers)):
+    for idx, (prompt, prompt_answer) in tqdm(enumerate(zip(batch_gsm8k_ins, gsm8k_answers)), total=len(batch_gsm8k_ins), desc="Processing batches"):
         if not isinstance(prompt, list):
             prompt = [prompt]
         
@@ -168,7 +169,7 @@ def parse_args():
     parser.add_argument("--data_file", type=str, default='')  # data path
     parser.add_argument("--start", type=int, default=0) #start index
     parser.add_argument("--end", type=int, default=MAX_INT)  # end index
-    parser.add_argument("--batch_size", type=int, default=400)  # batch_size
+    parser.add_argument("--batch_size", type=int, default=200)  # batch_size
     parser.add_argument("--is_pretrained", action="store_true", default=False,
                         help="If set, indicates a Hugging Face pretrained model is used.")
     return parser.parse_args()
