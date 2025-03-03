@@ -6,6 +6,39 @@ set -e
 # Function to handle errors and output error message
 trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
+# Function to wait for a specific GPU to be free
+wait_for_gpu() {
+    local gpu_id="$1"
+
+    echo "Checking GPU $gpu_id for availability..."
+
+    while true; do
+        # For each process, nvidia-smi prints something like:
+        #    GPU,PID,Process name, used memory, ...
+        # If there's "No running processes found" for that GPU, or if the only
+        # row is the CSV header, the GPU is free.
+
+        # We'll query only compute-apps for that particular GPU:
+        # This returns lines for each active process on that GPU.
+        processes=$(nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader | grep -v "^$")
+        
+        # We need the UUID of GPU $gpu_id to filter. Let's get it:
+        gpu_uuid=$(nvidia-smi -i "$gpu_id" --query-gpu=uuid --format=csv,noheader)
+        
+        # Now filter the 'processes' that match our GPU's uuid
+        used_by_this_gpu=$(echo "$processes" | grep "$gpu_uuid" || true)
+
+        if [ -z "$used_by_this_gpu" ]; then
+            # If it's empty, means no processes are running on GPU $gpu_id
+            echo "GPU $gpu_id is free!"
+            break
+        else
+            echo "GPU $gpu_id is still busy. Checking again in 30s..."
+            sleep 30
+        fi
+    done
+}
+
 # Define models and their properties
 models=(
     # "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
@@ -28,8 +61,10 @@ run_pipeline() {
     local gpu_id=$4
     local name=${base_model##*/}
 
-    prune_ckpt_path="${name}_s${sparsity}_block_mid_global"
-    tune_ckpt_path="${name}_s${sparsity}_block_mid_global"
+    prune_ckpt_path="${name}_s${sparsity}_block_all_global"
+    tune_ckpt_path="${name}_s${sparsity}_block_all_global_lora_r16"
+
+    wait_for_gpu "$gpu_id"
 
     # # Pruning with automatic OOM handling
     # echo "[${name} - Sparsity: ${sparsity}] [START] - Start Pruning Model on GPU ${gpu_id}"
@@ -52,25 +87,25 @@ run_pipeline() {
     # fi
     # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
 
-    # # Fine-tuning
-    # echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
-    # echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
-    #     --data_path open-r1/OpenThoughts-114k-math --output_dir tune_log/${tune_ckpt_path} \
-    #     --wandb_project PruneDebug --lora_r 8 --num_epochs 2 \
-    #     --learning_rate 1e-4 --batch_size 64
-    # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Prune and Post-Training."
+    # Fine-tuning
+    echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
+        --data_path open-r1/OpenThoughts-114k-math --output_dir tune_log/${tune_ckpt_path} \
+        --wandb_project PruneDebug --lora_r 16 --num_epochs 4 \
+        --learning_rate 1e-4 --batch_size 64
+    echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Prune and Post-Training."
 
     # Evaluating
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Evaluation on GPU ${gpu_id}"
     # echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0 5
-    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 1400 5
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 1400 5 "_lora_r16"
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Evaluation"
     echo "[${name} - Sparsity: ${sparsity}] [INFO] - The pruned model is at prune_log/${prune_ckpt_path}/pytorch_model.bin, and the recovery weight is at tune_log/${tune_ckpt_path}/"
 }
 
 # Set the GPUs to use
 # You want to use GPU 2 and 3
-gpus=(3 1 0)
+gpus=(0 1 3)
 
 # Main loop to run each model
 for i in "${!models[@]}"; do

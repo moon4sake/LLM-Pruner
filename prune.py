@@ -10,7 +10,7 @@ from typing import Tuple
 
 import torch
 import numpy as np
-from transformers import LlamaTokenizer, GenerationConfig, LlamaConfig, AutoTokenizer, LlamaForCausalLM
+from transformers import LlamaTokenizer, GenerationConfig, LlamaConfig, AutoTokenizer, LlamaForCausalLM, Qwen2ForCausalLM
 from transformers.models.llama.modeling_llama import LlamaRMSNorm
 
 import LLMPruner.torch_pruning as tp 
@@ -40,11 +40,21 @@ def main(args):
     )
 
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
-    model = LlamaForCausalLM.from_pretrained(
-        args.base_model,
-        device_map="auto",
-        torch_dtype=torch.float16,
-    )
+    if 'qwen' in args.base_model.lower():
+        model = Qwen2ForCausalLM.from_pretrained(
+            args.base_model,
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+    elif 'llama' in args.base_model.lower():
+        model = LlamaForCausalLM.from_pretrained(
+            args.base_model,
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+    else:
+        raise NotImplementedError
+
     if args.device != "cpu":
         model.half()
 

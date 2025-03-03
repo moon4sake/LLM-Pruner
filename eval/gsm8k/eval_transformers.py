@@ -111,7 +111,7 @@ def gsm8k_test(model, tokenizer, data_path, start=0, end=MAX_INT, batch_size=1, 
     batch_gsm8k_ins = batch_data(gsm8k_ins, batch_size=batch_size)
 
     # stop_tokens = ["Question:", "Question", "USER:", "USER", "ASSISTANT:", "ASSISTANT", "Instruction:", "Instruction", "Response:", "Response"]
-    stop_tokens = ['<|im_end|>', '<|eot_id|>']
+    stop_tokens = ['<|im_end|>', '<|eot_id|>', '<|start_header_id|>user<|end_header_id|>', '<|im_start|>user<|im_end|>', 'Q:', '</s>']
     stop_criteria = StoppingCriteriaList([StopOnStrTokens(stop_tokens, tokenizer)])
     
     result = []
@@ -127,8 +127,9 @@ def gsm8k_test(model, tokenizer, data_path, start=0, end=MAX_INT, batch_size=1, 
         outputs = model.generate(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            do_sample=False,         
-            top_p=1.0,  
+            do_sample=True,         
+            top_p=0.6,  
+            temperature=0.95,
             max_new_tokens=4096,
             stopping_criteria=stop_criteria
         )
@@ -136,6 +137,8 @@ def gsm8k_test(model, tokenizer, data_path, start=0, end=MAX_INT, batch_size=1, 
         for out_ids in outputs:
             generated_text = tokenizer.decode(out_ids, skip_special_tokens=False)
             res_completions.append(generated_text)
+        
+        break
 
     invalid_outputs = []
     gt=[]
@@ -156,7 +159,7 @@ def gsm8k_test(model, tokenizer, data_path, start=0, end=MAX_INT, batch_size=1, 
 
     df.to_csv(f'{args.outdir}.csv',index=False)
     
-    # print('len invalid outputs ====', len(invalid_outputs), ', invalid_outputs===', invalid_outputs)
+    print('len invalid outputs ====', len(invalid_outputs), ', invalid_outputs===', invalid_outputs)
     print('start===', start, ', end====', end)
     print('gsm8k length====', len(result), ', gsm8k acc====', acc)
 
@@ -169,7 +172,7 @@ def parse_args():
     parser.add_argument("--data_file", type=str, default='')  # data path
     parser.add_argument("--start", type=int, default=0) #start index
     parser.add_argument("--end", type=int, default=MAX_INT)  # end index
-    parser.add_argument("--batch_size", type=int, default=200)  # batch_size
+    parser.add_argument("--batch_size", type=int, default=100)  # batch_size
     parser.add_argument("--is_pretrained", action="store_true", default=False,
                         help="If set, indicates a Hugging Face pretrained model is used.")
     return parser.parse_args()

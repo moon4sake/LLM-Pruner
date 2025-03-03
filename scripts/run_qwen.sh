@@ -52,18 +52,18 @@ run_pipeline() {
     # fi
     # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Pruning Model"
 
-    # Fine-tuning
-    echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
-    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
-        --data_path open-r1/OpenThoughts-114k-math --output_dir tune_log/${tune_ckpt_path} \
-        --wandb_project Prune250303 --lora_r 16 --num_epochs 4 \
-        --learning_rate 1e-4 --batch_size 64
-    echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Prune and Post-Training."
+    # # Fine-tuning
+    # echo "[${name} - Sparsity: ${sparsity}] [START] - Start Tuning on GPU ${gpu_id}"
+    # echo y | CUDA_VISIBLE_DEVICES=${gpu_id} python post_training.py --prune_model prune_log/${prune_ckpt_path}/pytorch_model.bin \
+    #     --data_path open-r1/OpenThoughts-114k-math --output_dir tune_log/${tune_ckpt_path} \
+    #     --wandb_project Prune250303 --lora_r 16 --num_epochs 8 \
+    #     --learning_rate 1e-4 --batch_size 64
+    # echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Prune and Post-Training."
 
     # Evaluating
     echo "[${name} - Sparsity: ${sparsity}] [START] - Start Evaluation on GPU ${gpu_id}"
     # echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} "" prune_log/${name}_s${sparsity}_block 0 5
-    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 5000 5 "_lora_r16"
+    echo y | CUDA_VISIBLE_DEVICES=${gpu_id} bash scripts/evaluate.sh "simple" ${base_model} ${sparsity} tune_log/${tune_ckpt_path} prune_log/${prune_ckpt_path} 10000 5 "_lora_r16"
     echo "[${name} - Sparsity: ${sparsity}] [FINISH] - Finish Evaluation"
     echo "[${name} - Sparsity: ${sparsity}] [INFO] - The pruned model is at prune_log/${prune_ckpt_path}/pytorch_model.bin, and the recovery weight is at tune_log/${tune_ckpt_path}/"
 }
