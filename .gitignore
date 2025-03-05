@@ -17,7 +17,9 @@ log.txt
 *.log
 
 moon4sake/
-# archive/
+models/finetuned/
+models/pruned/
+archive/
 flagged/
 script/
 wandb

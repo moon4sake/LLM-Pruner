@@ -1,0 +1,48 @@
+# Model arguments
+model_name_or_path: "../models/pruned"
+tokenizer_name_or_path: meta-llama/Llama-3.1-8B-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+
+# Data training arguments
+dataset_splits:
+- train_sft
+- test_sft
+preprocessing_num_workers: 12
+
+# SFT trainer config
+add_eos_token: false
+bf16: true
+cutoff_len: 256 
+data_path: "open-r1/OpenThoughts-114k-math"
+do_eval: true
+eval_strategy: epoch
+gradient_accumulation_steps: 1
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: False
+hub_model_id: Llama-3.1-8B-sft-pruned
+hub_strategy: every_save
+learning_rate: 2.0e-05
+log_level: info
+logging_steps: 5
+logging_strategy: steps
+lr_scheduler_type: cosine
+max_seq_length: 2048
+max_steps: -1
+num_train_epochs: 5
+output_dir: "../models/finetuned"
+overwrite_output_dir: true
+per_device_eval_batch_size: 1
+per_device_train_batch_size: 1
+push_to_hub: false
+remove_unused_columns: true
+report_to:
+- wandb
+save_strategy: "epoch"
+save_total_limit: 10
+seed: 42
+train_on_inputs: False
+val_set_size: 50
+warmup_ratio: 0.1

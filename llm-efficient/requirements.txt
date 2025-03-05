@@ -1,8 +1,0 @@
-alignment-handbook
-huggingface_hub==0.24.7
-lm-eval
-plotly
-safetensors
-torch
-transformers~=4.46.2
-trl<=0.12.1

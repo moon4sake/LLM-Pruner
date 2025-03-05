@@ -6,30 +6,30 @@
 ## Prune and fine-tune
 ### All at once: 
 ```
-bash scripts/run.sh
+bash examples/run.sh
 ```
 ### Prune
 ```
-python prune.py
+python scripts/prune_v1.py
 ```
 
 ### Fine-tune
 ```
-python post_training.py
+python python/finetune_v1.py
 ```
 
 ## Evaluate
 ### Latency
 ```
-bash eval/latency/test_latency.sh
+bash scripts/eval/latency/test_latency.sh
 ```
 
 ### S1 (simple scaling)
 ```
-bash eval/s1/run.sh
+bash scripts/eval/s1/run.sh
 ```
 
 ### GSM8k
 ```
-bash eval/gsm8k/run.sh
+bash scripts/eval/gsm8k/run.sh
 ```
