@@ -48,21 +48,33 @@ MODEL_NAME="Llama-3.2-1B-Instruct"
 NUM_PROCESSES=1
 
 # Parse command-line options
-while getopts e:m:t:p:d: flag
+while getopts e:m:p:d:s:b: flag
 do
     case "${flag}" in
         e) EXP_NAME=${OPTARG};;
         m) MODEL_NAME=${OPTARG};;
         p) NUM_PROCESSES=${OPTARG};;
         d) DATA_PATH=${OPTARG};;
+        s) SPARSITY=${OPTARG};;
+        b) BATCH_SIZE=${OPTARG};;
         *) echo "Invalid option";;
     esac
 done
-
-# Run the script (without accelerate or deepspeed)
-python "${SCRIPT_DIR}/finetune_v1.py" \
-    "${RECIPE_DIR}/${MODEL_NAME}/config_full.yaml" \
-    --exp_name="${EXP_NAME}" \
-    --data_path="${DATA_PATH}" \
-    --model_name_or_path="${PRUNED_DIR}/${EXP_NAME}/pytorch_model.bin" \
-    --output_dir="${FINETUNED_DIR}/${EXP_NAME}"
+if [ "$SPARSITY" = "0.00" ]; then
+    python "${SCRIPT_DIR}/finetune_v1.py" \
+        "${RECIPE_DIR}/${MODEL_NAME}/config_full.yaml" \
+        --exp_name="${EXP_NAME}" \
+        --data_path="${DATA_PATH}" \
+        --output_dir="${FINETUNED_DIR}/${EXP_NAME}" \
+        --per_device_train_batch_size=${BATCH_SIZE} \
+        --per_device_eval_batch_size=${BATCH_SIZE}
+else
+    python "${SCRIPT_DIR}/finetune_v1.py" \
+        "${RECIPE_DIR}/${MODEL_NAME}/config_full.yaml" \
+        --exp_name="${EXP_NAME}" \
+        --data_path="${DATA_PATH}" \
+        --model_name_or_path="${PRUNED_DIR}/${EXP_NAME}/pytorch_model.bin" \
+        --output_dir="${FINETUNED_DIR}/${EXP_NAME}" \
+        --per_device_train_batch_size=${BATCH_SIZE} \
+        --per_device_eval_batch_size=${BATCH_SIZE}
+fi

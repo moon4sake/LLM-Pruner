@@ -1,22 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-# Copyright 2023 The HuggingFace Inc. team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""
-Supervised fine-tuning script for decoder language models.
-"""
-
 import logging
 import os
 import random
@@ -29,7 +10,7 @@ import transformers
 from transformers import AutoModelForCausalLM, set_seed
 from transformers.trainer import TRAINING_ARGS_NAME, WEIGHTS_NAME
 from datasets import load_dataset
-
+from transformers.trainer import TrainerCallback, TrainerState, TrainerControl, TrainingArguments
 from LLMPruner.utils.prompter import Chat_Prompter
 
 from utils.alignment import (
@@ -135,18 +116,18 @@ def main():
 
         result["labels"] = result["input_ids"].copy()
 
-        # Ensure all sequences have the same length
-        if len(result["input_ids"]) < training_args.cutoff_len:
-            padding_length = training_args.cutoff_len - len(result["input_ids"])
-            result["input_ids"].extend([tokenizer.pad_token_id] * padding_length)
-            result["attention_mask"].extend([0] * padding_length)
-            result["labels"].extend([-100] * padding_length)
+        # # Ensure all sequences have the same length
+        # if len(result["input_ids"]) < training_args.cutoff_len:
+        #     padding_length = training_args.cutoff_len - len(result["input_ids"])
+        #     result["input_ids"].extend([tokenizer.pad_token_id] * padding_length)
+        #     result["attention_mask"].extend([0] * padding_length)
+        #     result["labels"].extend([-100] * padding_length)
 
-        # Truncate if necessary
-        if len(result["input_ids"]) > training_args.cutoff_len:
-            result["input_ids"] = result["input_ids"][:training_args.cutoff_len]
-            result["attention_mask"] = result["attention_mask"][:training_args.cutoff_len]
-            result["labels"] = result["labels"][:training_args.cutoff_len]
+        # # Truncate if necessary
+        # if len(result["input_ids"]) > training_args.cutoff_len:
+        #     result["input_ids"] = result["input_ids"][:training_args.cutoff_len]
+        #     result["attention_mask"] = result["attention_mask"][:training_args.cutoff_len]
+        #     result["labels"] = result["labels"][:training_args.cutoff_len]
 
         return result
 
@@ -172,17 +153,21 @@ def main():
             ]  # could be sped up, probably
         return tokenized_full_prompt
     
-    data = load_dataset(training_args.data_path)
+    if training_args.data_path == "open-r1/OpenR1-Math-220k":
+        data = load_dataset(training_args.data_path, "default")
+    else:
+        raise NotImplementedError(f"Dataset {training_args.data_path} not implemented")
+        # train_data = (
+        #     train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+        # )
+        # val_data = {
+        #     training_args.data_path: train_val["test"].shuffle().map(generate_and_tokenize_prompt),
+        # }
 
     train_val = data["train"].train_test_split(
         test_size=training_args.val_set_size, shuffle=True, seed=42
     )
-    train_data = (
-        train_val["train"].shuffle().map(generate_and_tokenize_prompt)
-    )
-    val_data = {
-        training_args.data_path: train_val["test"].shuffle().map(generate_and_tokenize_prompt),
-    }
+    train_data, val_data = train_val["train"], train_val["test"]
 
     #######################
     # Load pretrained model
@@ -229,7 +214,7 @@ def main():
             model = AutoModelForCausalLM.from_pretrained(
                 model_args.model_name_or_path, **model_kwargs
             )
-            model, tokenizer = setup_chat_format(model, tokenizer)
+            # model, tokenizer = setup_chat_format(model, tokenizer)
             model_kwargs = None
 
     # #####################
@@ -273,6 +258,22 @@ def main():
     ########################
     # Initialize the Trainer
     ########################
+    
+    class SaveBinCallback(TrainerCallback):
+        def on_epoch_end(
+            self,
+            args: TrainingArguments,
+            state: TrainerState,
+            control: TrainerControl,
+            model=None,
+            **kwargs
+        ):
+            epoch = int(state.epoch)
+            save_path = f"{args.output_dir}/pytorch_model_epoch_{epoch}.bin"
+            torch.save(model, save_path)
+            print(f"Saved model at end of epoch {epoch} to {save_path}")
+
+    
     trainer = SFTTrainer(
         model=model,
         # model_init_kwargs=model_kwargs,
@@ -285,8 +286,9 @@ def main():
         # packing=True,
         # peft_config=get_peft_config(model_args),
         # dataset_kwargs=training_args.dataset_kwargs,
+        callbacks=[SaveBinCallback()],
     )
-
+    
     ###############
     # Training loop
     ###############
@@ -314,18 +316,20 @@ def main():
     trainer.save_model(training_args.output_dir)
     logger.info(f"Model saved to {training_args.output_dir}")
 
+    torch.save(model, f"{training_args.output_dir}/pytorch_model.bin")
+
     # Save everything else on main process
-    kwargs = {
-        "finetuned_from": model_args.model_name_or_path,
-        "dataset": list(data_args.dataset_mixer.keys()),
-        "dataset_tags": list(data_args.dataset_mixer.keys()),
-        "tags": ["alignment-handbook"],
-    }
-    if trainer.accelerator.is_main_process:
-        trainer.create_model_card(**kwargs)
-        # Restore k,v cache for fast inference
-        trainer.model.config.use_cache = True
-        trainer.model.config.save_pretrained(training_args.output_dir)
+    # kwargs = {
+    #     "finetuned_from": model_args.model_name_or_path,
+    #     "dataset": list(data_args.dataset_mixer.keys()),
+    #     "dataset_tags": list(data_args.dataset_mixer.keys()),
+    #     "tags": ["alignment-handbook"],
+    # }
+    # if trainer.accelerator.is_main_process:
+    #     trainer.create_model_card(**kwargs)
+    #     # Restore k,v cache for fast inference
+    #     trainer.model.config.use_cache = False
+    #     trainer.model.config.save_pretrained(training_args.output_dir)
 
     ##########
     # Evaluate

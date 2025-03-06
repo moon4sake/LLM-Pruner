@@ -29,7 +29,7 @@ run_pipeline() {
     local NAME=${BASE_MODEL##*/}
 
     EXP_NAME="${NAME}/${NAME}_s${SPARSITY}_block_all_global"
-    DATA_PATH="open-r1/OpenThoughts-114k-math"
+    DATA_PATH="open-r1/OpenR1-Math-220k"
 
     #################
     # Pruning 
@@ -48,7 +48,7 @@ run_pipeline() {
     # Fine-tuning
     #################
     echo "[${NAME} - Sparsity: ${SPARSITY}] [START] - Start Tuning on GPU ${GPU_ID}"
-    echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} bash ${EXAMPLE_DIR}/train.sh -m ${NAME} -e ${EXP_NAME} -d ${DATA_PATH}
+    echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} bash ${EXAMPLE_DIR}/train.sh -m ${NAME} -e ${EXP_NAME} -d ${DATA_PATH} -s ${SPARSITY} -b 2
     echo "[${NAME} - Sparsity: ${SPARSITY}] [FINISH] - Finish Prune and Post-Training."
 
     # #################

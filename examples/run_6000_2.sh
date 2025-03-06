@@ -3,10 +3,6 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Add project root to PYTHONPATH for both the current directory and LLMPruner
-PROJECT_ROOT=$(dirname $(dirname $(realpath "$0")))
-export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH}"
-
 # Function to handle errors and output error message
 trap 'echo "[ERROR] A command failed on line $LINENO. Exiting."' ERR
 
@@ -15,15 +11,15 @@ SCRIPT_DIR=$(dirname $(dirname $(realpath "$0")))/"scripts"
 EXAMPLE_DIR=$(dirname $(dirname $(realpath "$0")))/"examples"
 
 MODELS=(
-    # "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
     # "Qwen/Qwen2.5-Math-1.5B-Instruct"
-    "meta-llama/Llama-3.1-8B-Instruct"
-    "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    # "meta-llama/Llama-3.1-8B-Instruct"
+    # "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
     # "meta-llama/Llama-3.2-3B-Instruct"
     # "meta-llama/Llama-3.2-1B-Instruct"
 )
 
-SPARSITY_VALUES=("0.10" "0.25" "0.50" "0.75")
+SPARSITY_VALUES=("0.00")
 
 # Function to prune, fine-tune, and evaluate a model for a single sparsity level
 run_pipeline() {
@@ -35,9 +31,9 @@ run_pipeline() {
     EXP_NAME="${NAME}/${NAME}_s${SPARSITY}_block_all_global"
     DATA_PATH="open-r1/OpenThoughts-114k-math"
 
-    # ################
-    # ## Pruning 
-    # ################
+    #################
+    # Pruning 
+    #################
     # echo "[${NAME} - Sparsity: ${SPARSITY} - Iterative Steps: $(( ${SPARSITY/./} / 10 + 1))] [START] - Start Pruning Model on GPU ${GPU_ID}"
     # echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} python ${SCRIPT_DIR}/prune_v1.py --base_model ${BASE_MODEL} \
     #              --pruning_ratio ${SPARSITY} --global_pruning \
@@ -49,14 +45,18 @@ run_pipeline() {
     # echo "[${NAME} - Sparsity: ${SPARSITY} - Iterative Steps: $(( ${SPARSITY/./} / 10 + 1))] [FINISH] - Finish Pruning Model"
 
     #################
-    ## Fine-tuning
+    # Fine-tuning
     #################
     echo "[${NAME} - Sparsity: ${SPARSITY}] [START] - Start Tuning on GPU ${GPU_ID}"
-    echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} bash ${EXAMPLE_DIR}/train.sh -m ${NAME} -e ${EXP_NAME} -d ${DATA_PATH}
+    if [ "$SPARSITY" = "0.00" ]; then
+        echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} bash ${EXAMPLE_DIR}/train_dense.sh -m ${NAME} -e ${BASE_MODEL} -d ${DATA_PATH}
+    else
+        echo y | CUDA_VISIBLE_DEVICES=${GPU_ID} bash ${EXAMPLE_DIR}/train.sh -m ${NAME} -e ${EXP_NAME} -d ${DATA_PATH}
+    fi
     echo "[${NAME} - Sparsity: ${SPARSITY}] [FINISH] - Finish Prune and Post-Training."
 
     # #################
-    # ## Evaluating
+    # # Evaluating
     # #################
     # echo "[${NAME} - Sparsity: ${SPARSITY}] [START] - Start Evaluation on GPU ${GPU_ID}"
     # if [ "$SPARSITY" = "0.00" ]; then

@@ -27,6 +27,7 @@ log/
 tiny_*
 lora-*
 results
+test_gsm9k.py
 
 # Ignore for lm-evaluation-harness
 env
