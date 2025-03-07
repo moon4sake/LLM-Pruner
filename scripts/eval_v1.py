@@ -98,7 +98,7 @@ def setup_parser() -> argparse.ArgumentParser:
         "--batch_size",
         "-b",
         type=str,
-        default=1,
+        default="auto",
         metavar="auto|auto:N|N",
         help="Acceptable values are 'auto', 'auto:N' or N, where N is an integer. Default 1.",
     )
@@ -112,7 +112,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--device",
         type=str,
-        default=None,
+        default="cuda",
         help="Device to use (e.g. cuda, cuda:0, cpu).",
     )
     parser.add_argument(

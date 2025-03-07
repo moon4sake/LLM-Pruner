@@ -34,22 +34,6 @@ def set_random_seed(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def get_wikitext(tokenizer, n_samples, seq_len):
-    traindata = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
-
-    tokenized_samples, history = [], []
-    for p in range(n_samples):
-        while True:
-            i = random.randint(0, len(traindata) - 1)
-            tokenized_sample = tokenizer(traindata[i]['text'], return_tensors='pt')
-            if tokenized_sample.input_ids.shape[1] >= seq_len and i not in history:
-                history.append(i)
-                break
-        i = random.randint(0, tokenized_sample.input_ids.shape[1] - seq_len)
-        tokenized_samples.append(tokenized_sample.input_ids[:, i:i+seq_len])
-    return torch.cat(tokenized_samples, dim=0 )
-
-
 def main(args):
     set_random_seed(args.seed)
 
@@ -229,37 +213,43 @@ def main(args):
         for i in range(args.iterative_steps):
 
             if pruner_type in ["taylor"]:
-                """
-                example_prompts = get_wikitext(
-                    tokenizer, args.num_examples, seq_len=args.pruner_seq_len
-                ).to(args.device)
-                """
-                example_prompts = get_examples(
-                    "bookcorpus", tokenizer, args.num_examples, seq_len=args.pruner_seq_len
-                ).to(args.device)
-                logger.log("Start Backwarding in iterative steps = {}...".format(i))
-                if args.taylor in ["param_mix", "param_second"]:
-                    for j in range(args.num_examples):
-                        print(j)
-                        batch_input = example_prompts[j].unsqueeze(0)
-                        loss = model(batch_input, labels=batch_input).loss
-                        logger.log("Loss = {}".format(loss))
-                        loss.backward()
+                example_data = get_examples(
+                    args.dataset, tokenizer, args.num_examples, seq_len=args.pruner_seq_len
+                )
+                if isinstance(example_data, tuple):
+                    example_prompts, example_labels = example_data
+                    example_prompts = example_prompts.to(args.device)
+                    example_labels = example_labels.to(args.device)
+                    loss = model(example_prompts, labels=example_labels).loss
+                else:
+                    example_prompts = example_data.to(args.device)
+                    loss = model(example_prompts, labels=example_prompts).loss
+                    
+                # logger.log("Start Backwarding in iterative steps = {}...".format(i))
+                # if args.taylor in ["param_mix", "param_second"]:
+                #     for j in range(args.num_examples):
+                #         print(j)
+                #         batch_input = example_prompts[j].unsqueeze(0)
+                #         loss = model(batch_input, labels=batch_input).loss
+                #         logger.log("Loss = {}".format(loss))
+                #         loss.backward()
 
-                        for module_param in model.parameters():
-                            module_param.grad = (
-                                module_param.grad
-                                * module_param.grad
-                                / args.num_examples
-                            )
-                            if hasattr(module_param, "acc_grad"):
-                                module_param.acc_grad += module_param.grad
-                            else:
-                                module_param.acc_grad = copy.deepcopy(module_param.grad)
-                        model.zero_grad()
-                        del loss.grad
+                #         for module_param in model.parameters():
+                #             module_param.grad = (
+                #                 module_param.grad
+                #                 * module_param.grad
+                #                 / args.num_examples
+                #             )
+                #             if hasattr(module_param, "acc_grad"):
+                #                 module_param.acc_grad += module_param.grad
+                #             else:
+                #                 module_param.acc_grad = copy.deepcopy(module_param.grad)
+                #         model.zero_grad()
+                #         del loss.grad
 
-                loss = model(example_prompts, labels=example_prompts).loss
+                # Calculate cross-entropy loss by using the input tokens as both inputs and labels
+                # This computes how well the model predicts the next token given the current one
+                # Used for Taylor pruning to measure parameter importance
                 logger.log("Loss = {}".format(loss))
                 loss.backward()
 
@@ -403,6 +393,12 @@ if __name__ == "__main__":
         type=str,
         default="meta-llama/Llama-3.2-1B-Instruct",
         help="base model name",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="bookcorpus",
+        help="dataset name",
     )
     parser.add_argument(
         "--save_ckpt_log_name",
